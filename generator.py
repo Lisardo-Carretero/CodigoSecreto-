@@ -42,7 +42,8 @@ def generate_card(rng: random.Random | None = None) -> List[List[str]]:
     List[List[str]]
         A 5x5 matrix of symbols.
     """
-    rng = rng or random.Random()
+    if rng is None:
+        rng = random.Random()
     pool = _build_symbol_pool()
     rng.shuffle(pool)
     return [pool[i * 5 : (i + 1) * 5] for i in range(5)]
