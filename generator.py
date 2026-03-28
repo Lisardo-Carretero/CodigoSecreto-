@@ -1,41 +1,61 @@
 import random
 from typing import List, Sequence
 
-DIAMOND = "♦"
-CIRCLE = "O"
+BLUE_DIAMOND = "◆"  # Equipo azul (rombo)
+RED_SQUARE = "■"  # Equipo rojo (cuadrado)
 INFILTRATOR = "X"
 EMPTY = "-"
 
+_VALID_TEAMS = ("blue", "red")
 
-def _build_symbol_pool() -> List[str]:
+
+def _build_symbol_pool(active_team: str) -> List[str]:
     """
     Creates the base list of symbols for a 5x5 card.
+
+    Parameters
+    ----------
+    active_team : str
+        Team that starts (\"blue\" or \"red\"). The starter gets 6 pieces,
+        the other team gets 5.
 
     Returns
     -------
     List[str]
-        A list containing 6 diamonds, 5 circles, 1 infiltrator and 13 blanks.
+        A list containing team gems, 1 infiltrator and blanks filling the grid.
     """
+    if active_team not in _VALID_TEAMS:
+        raise ValueError(f"active_team must be one of {_VALID_TEAMS}")
+
+    blue_count = 6 if active_team == "blue" else 5
+    red_count = 6 if active_team == "red" else 5
+    blanks = 25 - (blue_count + red_count + 1)
+
     return (
-        [DIAMOND] * 6
-        + [CIRCLE] * 5
+        [BLUE_DIAMOND] * blue_count
+        + [RED_SQUARE] * red_count
         + [INFILTRATOR]
-        + [EMPTY] * 13
+        + [EMPTY] * blanks
     )
 
 
-def generate_card(rng: random.Random | None = None) -> List[List[str]]:
+def generate_card(
+    rng: random.Random | None = None, active_team: str | None = None
+) -> List[List[str]]:
     """
     Generate a random 5x5 card following the rules:
-    - 6 diamonds (♦)
-    - 5 circles (O)
-    - 1 infiltrator (X)
-    - Remaining spaces as blanks (-)
+    - 5x5 matrix
+    - Equipo que inicia: 6 gemas (rombos azules o cuadrados rojos)
+    - Equipo rival: 5 gemas
+    - 1 infiltrado (X)
+    - Resto de espacios vacíos (-)
 
     Parameters
     ----------
     rng : random.Random | None
         Optional random number generator to make output reproducible.
+    active_team : str | None
+        \"blue\" or \"red\". If None, it is chosen at random using the RNG.
 
     Returns
     -------
@@ -44,7 +64,10 @@ def generate_card(rng: random.Random | None = None) -> List[List[str]]:
     """
     if rng is None:
         rng = random.Random()
-    pool = _build_symbol_pool()
+    if active_team is None:
+        active_team = rng.choice(_VALID_TEAMS)
+
+    pool = _build_symbol_pool(active_team)
     rng.shuffle(pool)
     return [pool[i * 5 : (i + 1) * 5] for i in range(5)]
 
